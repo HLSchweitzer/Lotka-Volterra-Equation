@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src= "https://cdn.plot.ly/plotly-2.20.0.min.js"></script>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };</script>
+    <title>Equações de Lotka-Volterra</title>
+</head>
+
+<body style="background-color: #ddffdd;">
+
+<style>
+    body {
+    padding: 2rem;
+    font-size: 1.5em;
+    line-height: 1.6;
+    font-weight: 400;
+    color: #222;
+    max-width: 60rem;
+    margin: auto;
+}
+
+input[type=range] {
+    margin-top: 2em;
+}
+
+pre {
+    overflow-x: auto;
+}
+
+p {
+    text-align: justify;
+}
+
+img {
+    width: 100%;
+}
+
+.sliderscont {
+    display: flex;
+    flex-flow: column;
+    width: 40%;
+}
+
+.homeLink {
+    position: absolute;
+    top: -21px;
+    height: 40px;
+    padding-top: 21px;
+    background-color: #222;
+    color: #fff;
+    border-radius: 9px;
+    transition: .2s ease-in-out;
+}
+
+.homeLink:hover, .homeLink:focus {
+    top: -9px;
+}
+</style>
+
+<h1>Equações de Lotka-Volterra</h1>
+
+<p>
+    Nesse projeto tentaremos montar um modelo matemático que simule a população de uma certa presa e um certo predador ao longo do tempo.<br>
+    Primeiro levaremos em conta a situação na qual uma espécie, chamada presa, tem um amplo suprimento alimentar e a segunda espécie, 
+    denominada predador, se alimenta da presa.
+    <br> Seja $C(t)$ o número de presas e $L(t)$ o número de predadores no instante t.
+    <br> Na ausência de predadores, haveria um crescimento das presas proporcional a sua população, sendo assim:
+</p>
+
+<p>
+    $\frac d{dt}C = &alpha;C$
+</p>
+
+<p>
+    Na ausência de presas, assumimos que a população de predadores declinaria a uma taxa proporcional a população de predadores a cada instante 
+    de tempo, sendo assim:
+</p>
+
+<p>
+    $\frac d{dt}L = -&gamma;L$
+</p>
+
+<p>
+    Com ambas as espécies presentes, supomos que a causa principal por mortalidade entre as presas é serem comidas por predadores, 
+    e a taxa de natalidade e sobrevivência dos predadores depende do número de presas. Também, consideramos que o número de encontros 
+    entre presas e predadores seja proporcional ao produto da população de ambos.
+    <br>Um sistema de equações diferenciais que suporta todos essas hipóteses é como o sistema acoplado bidimensional de equações diferenciais ordinárias de primeira ordem não lineares a seguir:
+
+</p>
+
+<p>
+    $\frac d{dt}C = &alpha;C - &beta;CL$ <br> $\frac d{dt}L = &theta;CL - &gamma;L$
+</p>
+
+<p>
+    $&alpha;$ - Taxa de crescimento da presa<br>
+    $&beta;$ - Taxa de mortalidade da presa devido a predação<br>
+    $&theta;$ - Fator descrevendo quantas presas consumidas geram um novo predador<br>
+    $&gamma;$ - Taxa natural de mortalidade do predador
+</p>
+
+<p>
+    Essas equações são conhecidas como sistema predador-presa ou equações de Lotka-Volterra, pois foram desenvolvidas independentemente 
+    pelo matemático italiano Vito Volterra, quando estava estudando o comportamento oscilatório da quantidade de peixes predadores no Mar Adriático, e pelo matemático e químico estadunidense Alfred Lotka quando tentava transpor os princípios da físico-química para a biologia.
+    <br>Abaixo há um modelo gráfico da população do predador e da presa em função do tempo, junto com um plano de fase, onde é possível alterar os parâmetros numéricos das equações dada uma população inicial da presa de 5 indivíduos e do predador de 2 indivíduos, sendo as equações diferenciais resolvidas pelo método numérico de Runge-Kutta de Quarta Ordem: 
+    
+</p>
+
+<table>
+    <td>
+    <i>Taxa de Crescimento da Presa</i><br>
+    <input type="range" min = "0" max ="50" value = "30" id ="slide1" onInput ="atualiza()" style="width: 400px;" ><span id="alphaval"></span>
+    </td>
+    <td>
+    <i>Taxa de mortalidade da presa</i><br>
+    <input type ="range" min ="0" max = "50" value = "20" id = "slide2" onInput="atualiza()" style="width: 400px;"><span id="betaval"></span>
+    </td>
+</table>
+
+<table>  
+    <td>
+    <i>Taxa de mortalidade do predador</i><br>
+    <input type="range" min = "0" max ="50" value = "20" id ="slide3" onInput="atualiza()" style="width: 400px;"><span id="gamaval"></span>
+    </td>
+    
+    <td>
+    <i>Taxa de nascimento de predador</i><br>
+    <input type="range" min = "0" max ="50" value = "10" id ="slide4" onInput="atualiza()" style="width: 400px;"><span id="thetaval"></span>
+    </td>
+</table>
+
+<div id = "grafico" style="width: 1000px;" ></div>
+<br>
+<div id = "grafico1" style="width: 1000px;"></div>
+
+<p>
+	Outro meio de se analisar esse sistema de equações é utilizando certos elementos de algo conhecido como Teoria Qualitativa das Equações Diferenciais, mais precisamente, a parte da teoria que será usada nessa análise é algo conhecido como Aproximações Lineares de Sistemas Não Lineares.<br>
+	Para uma melhor análise é necessário definir alguns termos. Um ponto crítico de uma equação diferencial ou um sistema de equações diferenciais é o ponto onde $\dot X=0$. É possível aproximar um sistema não linear da forma $\dot X= AX + g(X)$ perto de um ponto crítico$(x_0,y_0)$, sendo essa aproximação dada pelo sistema:<br><br>
+	$
+	\begin{align}
+	\frac d{dt}\left(\begin{matrix}  
+			\ U1
+			\\U2 
+			\end{matrix} \right)  = \left(
+			\begin{matrix}  
+			F_{x}(x_0,y_0) & F_{y}(x_0,y_0) \\
+			G_{x}(x_0,y_0) & G_{y}(x_0,y_0) \\
+			\end{matrix} \right) 
+			\left(\begin{matrix}  
+			\ U1
+			\\U2 
+			\end{matrix} \right ) 
+	\end{align}
+	$  
+<br><br>
+Onde $U1=x-x_0$; $U2=y-y_0$; $\dot x=F(x,y)$ e $\dot y=G(x,y)$ 
+<br>
+<br>
+Percebe-se que a matriz $
+	\begin{align}
+			\left(\begin{matrix}  
+			F_{x}(x_0,y_0) & F_{y}(x_0,y_0) \\
+			G_{x}(x_0,y_0) & G_{y}(x_0,y_0) \\
+			\end{matrix} \right) 
+	\end{align}
+	$
+	É o Wronskiano $W$ do sistema de equações no ponto $(x_0,y_0)$, sendo assim pode-se reescrever essa matriz como sendo:
+	<br><br>
+	$
+	\begin{align}
+			W(x_0,y_0) = \left(\begin{matrix}  
+			F_{x}(x_0,y_0) & F_{y}(x_0,y_0) \\
+			G_{x}(x_0,y_0) & G_{y}(x_0,y_0) \\
+			\end{matrix}\right ) 
+	\end{align}
+	$
+	 
+<br><br>
+Utilizando essas equações no sistema de Lotka-Volterra, temos que nos pontos críticos :<br><br>
+
+$&alpha;C - &beta;CL=0$<br>
+$&theta;CL - &gamma;L=0$ <br><br>
+
+Sendo assim os pontos críticos são os pontos $PC1=(0,0)$ e $PC2 =(&gamma;/&theta;;&alpha;/&beta;)$.
+<br>
+<br>
+Calculando o Wronskiano $W(C_0,L_0)$ do sistema de equações temos:<br><br>
+$
+	\begin{align}
+			W(C_0,L_0) = \left(\begin{matrix}  
+			&alpha;-&beta;L & -&beta;C \\
+			&theta;L & &theta;C - &gamma; \\
+			\end{matrix} \right) 
+	\end{align}
+	$
+<br><br>
+Calculando o Sistema Linear Aproximado para o primeiro ponto crítico $PC1=(0,0)$, chegamos a primeira solução geral do sistema:<br><br>
+$ C = K1e^{&alpha;t}$ <br> $ L = K2e^{-&theta;t} $ <br><br>
+Logo, a origem é um ponto de sela, e portanto, é instável.<br><br>
+Utilizando agora o outro ponto crítico $PC2 =(&gamma;/&theta;;&alpha;/&beta;)$ , temos que a solução do sistema é:<br><br>
+
+$C = \frac &gamma;{&theta;} + \frac &gamma;{&theta;}Kcos(\sqrt{&alpha;&gamma;}t+\delta) $<br>
+$L =\frac &alpha;{&beta;}+\frac &alpha;{&beta;}\sqrt{\frac &gamma;{&beta;}}Ksen(\sqrt{&alpha;&gamma;}t+\delta)$<br><br>
+
+Podemos utilizar esses resultados para tirar diversas conclusões sobre as características dessas equações.<br><br>
+1. Os tamanhos das populações variam de forma periódica com período de $\frac {2\pi}{\sqrt{&alpha;&gamma;}}$, sendo esses períodos independentes das condições iniciais.<br>
+2. As populações de predadores e de presas estão defasadas por um quarto de ciclo. O número de presas varia primeiro e o número de predadores varia depois. <br>
+3. As amplitudes das oscilações são de $\frac &gamma;{&theta;}K$ para a população de presas e $\frac &alpha;{&beta;}\sqrt{\frac &gamma;{&beta;}}K$ para a população de predadores e portanto depende tanto das condições iniciais quanto dos parâmetros do problema. 
+<br><br>
+
+Abaixo é mostrado uma comparação da aproximação dada pela linearização do modelo e pelo método numérico utilizado anteriormente.
+<br>
+</p>
+
+<div id = "grafico4" style="width: 1000px;" ></div>
+
+<p>
+    
+    Uma análise mais cuidadosa dessas equações nos permite perceber que esse sistema apresenta algumas limitações, sendo as principais que:
+    <br>
+    <br>
+    - A população da presa é provida com uma quantidade infinita de alimento independentemente do tamanho da população em cada instante de tempo. <br>
+    - O predador se alimenta exclusivamente da presa e é totalmente dependente dessa como alimento. <br>
+    - O predador tem apetite ilimitado. <br>
+    <br>
+    Uma maneira de modificar as equações de Lotka-Volterra é supor que, na ausência de predadores, a presa cresça de acordo com um modelo onde 
+    haja uma capacidade máxima do ambiente de suportar a população da presa. Chamando essa capacidade máxima de M, temos as seguintes equações: 
+</p>
+<p>
+    $\frac d{dt}C = &alpha;C (1 - C &frasl; M) - &beta;CL $<br>
+    $\frac d{dt}L = &theta;CL - &gamma;L$
+</p>
+
+<p>
+    Abaixo é apresentado um modelo gráfico da população da presa e do predador junto com um plano de fase onde é possível modificar os parâmetros numéricos das equações e também a população máxima permitida pelo ambiente dada uma população inicialda presa de 5 indivíduos e do predador de 2 indíviduos.
+</p>
+
+<table>
+<td>
+<i>Taxa de Crescimento da Presa</i><br>
+<input type="range" min = "0" max ="50" value = "30" id ="slide11" onInput ="atualiza()" style="width: 400px;"><span id="alphaval1" ></span>
+</td> 
+<td>
+<i>Taxa de mortalidade da presa<i><br>   
+<input type ="range" min ="0" max = "50" value = "20" id = "slide22" onInput="atualiza()" style="width: 400px;"> <span id="betaval1"></span>
+</td>
+</table>
+
+<table>
+<td>    
+    <i>Taxa de mortalidade do predador</i><br>
+    <input type="range" min = "0" max ="50" value = "20" id ="slide33" onInput="atualiza()" style="width: 400px;"> <span id="gamaval1"></span>
+</td>
+<td>    
+    <i>Taxa de nascimento de predador</i><br>
+    <input type="range" min = "0" max ="50" value = "10" id ="slide44" onInput="atualiza()" style="width: 400px;"> <span id="thetaval1"></span>
+</td>
+</table>
+
+<table>
+    <i>População máxima da presa<i><br>
+    <input type="range" min = "1" max ="50" value = "1" id ="slideM" onInput="atualiza()" style="width: 400px;"> <span id="M"></span>
+</table>
+
+<div id = "grafico2" style="width: 1000px;" ></div>
+<br>
+<div id = "grafico3" style="width: 1000px;"></div>
+
+<div id="divNumero"></div>
+    <script src ="rk4.js"></script>
+</body>
+</html>
+
+
